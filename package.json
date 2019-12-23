@@ -1,0 +1,41 @@
+{
+  "name": "electron-suites",
+  "version": "1.0.0",
+  "description": "A collection of useful electron packages for vue-front-end-boilerplate.",
+  "main": "dist/esuites.js",
+  "sideEffects": false,
+  "scripts": {
+    "dist": "webpack --mode=production --progress --hide-modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luventa/electron-suites.git"
+  },
+  "keywords": [
+    "electron",
+    "utils"
+  ],
+  "author": "luventa <luventa@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/luventa/electron-suites/issues"
+  },
+  "homepage": "https://github.com/luventa/electron-suites#readme",
+  "dependencies": {
+    "electron": "^5.0.6",
+    "electron-debug": "^3.0.1",
+    "electron-devtools-installer": "^2.2.4",
+    "electron-store": "^5.0.0",
+    "log4js": "^6.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10"
+  },
+  "peerDependencies": {
+    "electron": "^5.0.6"
+  }
+}

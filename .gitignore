@@ -1,0 +1,18 @@
+### STS ###
+.DS_Store
+dist
+node_modules
+npm-debug.log
+npm-debug.log.*
+yarn-error.log
+yarn-error.log.*
+thumbs.db
+!.gitkeep
+
+### IDE ###
+.idea
+.vscode
+
+### EXT ###
+coverage
+package-lock.json
