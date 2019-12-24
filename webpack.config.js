@@ -7,7 +7,7 @@ module.exports = {
     filename: "esuites.js"
   },
   resolve: {
-    extensions: ['.js']
+    extensions: ['.js', '.json', '.node']
   },
   target: 'electron-main',
   module: {
@@ -25,6 +25,10 @@ module.exports = {
             ]
           }
         }
+      },
+      {
+        test: /\.node$/,
+        loader: 'node-loader'
       }
     ]
   }

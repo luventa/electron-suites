@@ -1,6 +1,5 @@
 import log4js from 'log4js'
 import { app } from 'electron'
-import { initializeMainWindows } from '../window'
 
 const logger = log4js.getLogger('app')
 const excludeEvents = ['ready', 'activate', 'window-all-closed']
@@ -25,23 +24,21 @@ export const registerEventHandlers = (events = {}) => {
 }
 
 /**
- * Default handler for event of eletron has finished initializing.
- * @see https://electronjs.org/docs/api/app#event-ready
- * 1. Install install devtools for development mode.
- * 2. register shortcust for debugging under development & testing mode.
- * 3. restore all windows user opended last time.
+ * Install dev tools with electron-devtools-installer and the given name.
+ * @see https://github.com/MarshallOfSound/electron-devtools-installer#what-extensions-can-i-use
+ * @param {String} devToolName the name of devtools
  */
-export const onReady = () => {
-  if (!global.__prod) {
-    const installExtension = require('electron-devtools-installer')
-    installExtension.default(installExtension.VUEJS_DEVTOOLS).then(() => {
-      logger.info('Vue devtool is ready')
-    }).catch(e => {
-      logger.warn('Unable to install vue-devtools: \n', e)
-    })
+export const installDevTool = devToolName => {
+  if (global.__prod) {
+    return
   }
 
-  initializeMainWindows()
+  const installExtension = require('electron-devtools-installer')
+  installExtension.default(installExtension[devToolName]).then(name => {
+    logger.info(`${name} is ready`)
+  }).catch(e => {
+    logger.warn('Unable to install vue-devtools: \n', e)
+  })
 }
 
 /**
@@ -55,13 +52,4 @@ export const onAllClosed = () => {
       app.quit()
     }
   })
-}
-
-/**
- * Default handler for event of application is activated
- * @kind macOs
- * @see https://electronjs.org/docs/api/app#event-activate-macos
- */
-export const onActivated = () => {
-  initializeMainWindows()
 }

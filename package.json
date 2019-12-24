@@ -1,6 +1,6 @@
 {
   "name": "electron-suites",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A collection of useful electron packages for vue-front-end-boilerplate.",
   "main": "dist/esuites.js",
   "sideEffects": false,
@@ -32,6 +32,7 @@
     "@babel/core": "^7.7.7",
     "@babel/preset-env": "^7.7.7",
     "babel-loader": "^8.0.6",
+    "node-loader": "^0.6.0",
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10"
   },
