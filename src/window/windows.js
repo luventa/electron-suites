@@ -73,7 +73,7 @@ export default class Windows {
     const existWindow = this.collection[name]
 
     if (existWindow) {
-      logger.info('Creating new BrowserWindow instance:', options)
+      logger.info('Restore exist window:', name)
       existWindow.restore()
       existWindow.focus()
       return existWindow
@@ -151,7 +151,7 @@ export default class Windows {
    * @param {*} name the name of closed window.
    */
   removeWindow (name) {
-    delete this.collection.name
+    delete this.collection[name]
     if (name === 'main') {
       this.closeAllWindow()
     }

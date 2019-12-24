@@ -23,3 +23,18 @@ export function handleEvent (events, name, context) {
   logger.debug('Invoking event handler:', name, 'with context', context)
   handler.apply(context, [...arguments].splice(3))
 }
+
+/**
+ * Send IPC message to renderer process.
+ * @param {BrowserWindow} window instance of Electron BrowserWindow.
+ * @param {String} topic message topic.
+ * @param {String | Object} message message content.
+ */
+export const sendIpcMessage = (window, topic, message) => {
+  if (!window || !topic || window.webContents) {
+    logger.warn('Window, webContents of window or topic for sendIpcMessage cannot be empty.')
+    return
+  }
+
+  webContents.send(topic, message)
+}
