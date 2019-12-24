@@ -21,7 +21,7 @@ export const registerEventHandlers = (events = {}) => {
       ...config,
       name: `${config.name}-${winHash}`
     })
-    handleEvent(events, 'open-window', instance, 1, 2, 3)
+    handleEvent(events, 'open-window', instance, config)
   })
 
   // Register customer event handlers
