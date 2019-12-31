@@ -18,7 +18,7 @@ export const switchBaseUrl = namespace => {
   if (global.__dev) {
     global.__baseUrl = namespace === 'app'
       ? `http://localhost:${global.__port}`
-      : `http://localhost:${global.__port}/${namespace}/index.html`
+      : `http://localhost:${global.__port}/${namespace}/dist/index.html`
   } else {
     global.__baseUrl = global.__baseUrl.replace(`${global.__namespace}.asar`, `${namespace}.asar`)
   }
