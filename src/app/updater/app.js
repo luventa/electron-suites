@@ -2,12 +2,10 @@ import { ipcMain } from 'electron'
 import { isEmpty } from 'lodash'
 import { autoUpdater } from 'electron-updater'
 import log4js from 'log4js'
-import { sendIpcMessage } from '../util/shared'
-import { windows } from '../window'
+import { sendRendererMessage } from '../../window'
 
 const logger = log4js.getLogger('updater')
 
-const mainWindow = windows.main
 const topic = 'app-updater'
 const messages = {
   error: 'Error occurs while updating app:',
@@ -42,21 +40,21 @@ export const initializeAppUpdater = options => {
 
   autoUpdater.on('checking-for-update', () => {
     logger.info('Checking for update in app-updater')
-    sendIpcMessage(mainWindow, topic, messages.checking)
+    sendRendererMessage(topic, messages.checking)
   })
 
   autoUpdater.on('update-available', () => {
     logger.info('New version is available, downloading electron app')
-    sendIpcMessage(mainWindow, topic, messages.download)
+    sendRendererMessage(topic, messages.download)
   })
 
   autoUpdater.on('update-not-available', () => {
     logger.info('Current app is the latest version. Auto update is completed.')
-    sendIpcMessage(mainWindow, topic, messages.completed)
+    sendRendererMessage(topic, messages.completed)
   })
 
   autoUpdater.on('download-progress', (progress, bytesPerSecond, percent, total, transferred) => {
-    sendIpcMessage(mainWindow, `${topic}-progress`, { progress, bytesPerSecond, percent, total, transferred })
+    sendRendererMessage(`${topic}-progress`, { progress, bytesPerSecond, percent, total, transferred })
   })
 
   autoUpdater.on('update-downloaded', () => {
@@ -66,15 +64,14 @@ export const initializeAppUpdater = options => {
       autoUpdater.quitAndInstall()
     })
 
-    sendIpcMessage(mainWindow, `${topic}-ready`)
+    sendRendererMessage(`${topic}-ready`)
   })
 
   ipcMain.on(`${topic}-check`, () => {
-    sendIpcMessage(mainWindow, topic, `${messages.error} ${err}`)
     autoUpdater.checkForUpdates()
   })
 
   autoUpdater.on('error', err => {
-    sendIpcMessage(mainWindow, topic, `${messages.error} ${err}`)
+    sendRendererMessage(topic, `${messages.error} ${err}`)
   })
 }

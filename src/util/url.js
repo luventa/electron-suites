@@ -9,3 +9,18 @@ export const resolveUrl = url => {
 
   return `${global.__baseUrl}${url}`
 }
+
+/**
+ * Switch current namespace between different asar resources.
+ * @param {String} namespace identifier of the namespace about to switch to.
+ */
+export const switchBaseUrl = namespace => {
+  if (global.__dev) {
+    global.__baseUrl = namespace === 'app'
+      ? `http://localhost:${global.__port}`
+      : `http://localhost:${global.__port}/${namespace}/index.html`
+  } else {
+    global.__baseUrl = global.__baseUrl.replace(`${global.__namespace}.asar`, `${namespace}.asar`)
+  }
+  global.__namespace = namespace
+}

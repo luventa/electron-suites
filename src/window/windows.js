@@ -46,8 +46,8 @@ export default class Windows {
   }
 
   /**
-   * Find the window instance with the given
-   * @param {*} url the url that window loads
+   * Find the window instance with the given url
+   * @param {String} url the url that window loads
    * @returns {BrowserWindow} window instance
    */
   findWindowByUrl (url) {
@@ -68,7 +68,7 @@ export default class Windows {
  */
   createWindow (options) {
     logger.debug('Creating new BrowserWindow with options:', options)
-    const { name, url, sizeType, width, height, events, x, y } = options
+    const { name, url, category, width, height, events, x, y } = options
     /** @type {BrowserWindow} */
     const existWindow = this.collection[name]
 
@@ -85,8 +85,8 @@ export default class Windows {
 
     window._name = name
     window._url = url
+    window._category = category
     this.urlCache[url] = name
-    sizeType && (window._sizeType = sizeType)
     window.loadURL(url)
     this.registerEventHandlers(window, events)
 
@@ -137,7 +137,6 @@ export default class Windows {
   closeAllWindow () {
     for (const name in this.collection) {
       const instance = this.collection[name]
-      console.log(name)
       if (instance && !instance.isDestroyed()) {
         instance.close()
       }

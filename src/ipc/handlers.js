@@ -2,7 +2,7 @@ import log4js from 'log4js'
 import { ipcMain } from 'electron'
 import sha1 from 'hash.js/lib/hash/sha/1'
 import { handleEvent } from '../util/shared'
-import { createChildWindow } from '../window'
+import { createChildWindow, switchNamespace } from '../window'
 
 const logger = log4js.getLogger('ipc')
 const availableMethods = ['on', 'once', 'handle', 'handleOnce']
@@ -22,6 +22,11 @@ export const registerEventHandlers = (events = {}) => {
       name: `${config.name}-${winHash}`
     })
     handleEvent(events, 'open-window', instance, config)
+  })
+
+  ipcMain.on('switch-namespace', (evnet, namespace) => {
+    logger.debug('Trying to switch namespace from', global.__namespace, 'to', namespace)
+    switchNamespace(namespace)
   })
 
   // Register customer event handlers

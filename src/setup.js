@@ -1,3 +1,4 @@
+import path from 'path'
 import log4js from 'log4js'
 
 const logger = log4js.getLogger('setup')
@@ -48,13 +49,19 @@ export const setupRuntimeEnv = env => {
     logger.info(`Config ${key} has been set: ${config[key]}`)
   })
 
+  global.__port = config.port // port
+  global.__namespace = config.namespace // namespace
+  global.__resources = ['app'] // available asar resources
+
+  // folder for asar resources
+  global.__root = global.__dev
+    ? path.posix.normalize(config.cache)
+    : path.posix.normalize(config.root.split(`${config.namespace}.asar`)[0])
+
   // baseUrl
   global.__baseUrl = global.__dev
     ? `http://localhost:${config.port}`
     : `file://${config.root}/index.html`
-
-  // namespace
-  global.__namespace = config.namespace
 
   // resource and devtools
   if (global.__dev) {

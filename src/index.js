@@ -2,7 +2,7 @@ import { setupRuntimeEnv } from './setup'
 import { initializeStore } from './store'
 import { initializeApp } from './app'
 import { initializeIpc } from './ipc'
-import { initializeUpdater } from './updater'
+
 export { windows } from './window'
 
 export const initializeElectron = (config = {}) => {
@@ -10,7 +10,6 @@ export const initializeElectron = (config = {}) => {
 
   setupRuntimeEnv(env)
   initializeStore(store)
-  initializeApp(app)
+  initializeApp(app, updater)
   initializeIpc(ipcEvents)
-  initializeUpdater(updater)
 }

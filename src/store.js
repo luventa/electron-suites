@@ -5,7 +5,8 @@ const DEFAULT_OPTIONS = {
   defaults: {
     windows: {
       main: { width: 340, height: 550 }
-    }
+    },
+    resources: {}
   }
 }
 
