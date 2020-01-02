@@ -102,11 +102,6 @@ Electron主进程的运行环境配置项，主要包含：
 
 Electron应用配置项，主要包含：
 
- root: __dirname,
-    mode: process.env.NODE_ENV,
-    port: process.env.DEV_PORT,
-    cache: path.posix.resolve(__dirname, '../../cache')
-
 |    配置项字段   | 类型 |   说明    |
 |:--------------:|:----:|---------:|
 |devTool|string|指定开发环境下`electron-devtools-installer`的安装项，可选值参考[这里](https://github.com/MarshallOfSound/electron-devtools-installer#what-extensions-can-i-use)|
@@ -150,7 +145,163 @@ ipcEvents: {
 }
 ```
 
-#### updater
+#### updater.feedUrl
 
+类型：`PublishConfiguration | String | GithubOptions | S3Options | SpacesOptions | GenericServerOptions | BintrayOptions`
+
+Electron升级程序的配置项，这一项是`electron-builder`模块的配套组件`electron-updater`的简单配置项，
+
+```js
+// electron-updater config demo, in electron/main.js
+updater: {
+  // resource latest.yml and *.exe shall be available
+  feedUrl: "https://www.your-app-update.com/"
+  ...
+}
+```
+
+该配置项在套件中是用于调用以下代码初始化`auto-updater`所使用，关于该模块的具体使用方法可以参考[electron-updater](https://www.electron.build/auto-update)
+
+```js
+import { autoUpdater } from 'electron-updater'
+
+...
+
+// options here is updater.feedUrl
+autoUpdater.setFeedURL(options)
+
+```
+
+#### updater.resources
+
+类型：`string | object`
+
+Electron升级程序的配置项，这一项是自建的内置模块asar-updater的配置项
+
+```js
+// asar-updater config demo, in electron/main.js
+updater: {
+  ...
+  // manifest.json shall be available
+  resources: {
+    app: 'http://localhost:8018/app/app.asar',
+    pms: {
+      name: 'pms',
+      url: 'http://localhost:8018/pms/PeopleManageSystem.asar',
+      auto: true,
+      force: true
+    },
+    ucs: 'http://localhost:8018/ucs/UniqueClientSystem.asar'
+  }
+}
+```
+
+当资源的配置项为`string`时，最终资源文件将会被命名为`${key}.asar`；例如上面例子中，`UniqueClientSystem.asar`最终将会被命名为`usc.asar`，而该资源的`namespace`也会被定义为`ucs`。
+
+当资源的配置项为`object`时，字段说明如下
+
+|    配置项字段   | 类型 |   说明    |
+|:--------------:|:----:|---------:|
+|name|string|资源的`namespace`，最终资源文件也将会被命名为`${name}.asar`|
+|url|string|资源文件的远端地址|
+|auto|boolean|是否自动更新|
+|force|boolean|是否强制更新|
+
+### IPC Main Events
+
+套件中内置了一些由主进程中`ipcMain`监听的渲染进程事件，所以在渲染进程中可以使用`ipcRenderer`发送以下消息触发一些功能。
+
+
+#### app-updater
+
+|    channel   | 数据类型 |   数据说明    |
+|:--------------:|:----:|---------:|
+|app-updater-check|void|由渲染进程发出事件，触发`auto-updater`检查更新|
+|app-updater-install|void|由渲染进程发出事件，触发应用重启更新，仅在新版本应用下载完毕后生效|
+
+
+```js
+// trigger autoUpdater.checkForUpdates()
+ipcRenderer.send('app-updater-check')
+
+// trigger autoUpdater.quitAndInstall()
+ipcRenderer.send('app-updater-install')
+```
+
+#### asar-updater
+
+|    channel   | 数据类型 |   数据说明    |
+|:--------------:|:----:|---------:|
+|asar-updater-check|string|由渲染进程发出事件，触发`asar-updater`检查指定名称的资源进行更新检查|
+
+```js
+// trigger resource.checkForUpdate(). resource.name === 'pms'
+ipcRenderer.send('asar-updater-check', 'pms')
+```
+
+
+#### Open child window
+
+桌面端的一个优势在于可以打开多个窗口，并根据用户对窗口的大小和位置调整，将这些布局信息存储到用户本地。
+所以这里提供了一个主进程的事件监听，供渲染线程触发并打开子窗体使用：
+
+```js
+// trigger main process create new instance of BrowserWindow with the given config.
+ipcRenderer.send('open-window', config)
+```
+
+子窗口传参说明：
+
+|    配置项字段   | 类型 |   说明    |
+|:--------------:|:----:|---------:|
+|name|string|新开子窗口的名称，建议是前端路由的名称|
+|url|string（可选）|子窗口访问地址的全路径|
+|href|string（可选）|子窗口访问地址的相对路径|
+|category|string（可选）|子窗口的类别，比如同一类子窗口在布局上希望能复用时使用|
+|options|object（可选）|实例化`BrowserWindow`的其他配置项，参考[这里](https://electronjs.org/docs/api/browser-window#new-browserwindowoptions)|
+
+TODO: 子窗口事件响应events的支持
+
+#### Switch working namespace
+
+如开篇所述，在实际应用中会将多个项目的前端资源分别打包成`.asar`文件然后在一个桌面端程序内使用，所以在使用时需要在这些资源文件之间进行切换。
+
+```js
+// trigger main process switch working namespace.
+// will close all child windows and reload content of main window.
+ipcRender.send('switch-namespace', name)
+```
+
+*当资源文件不存在时，主进程会记录错误信息，后续考虑优化成发送事件*
+
+### IPC Renederer Events
+
+套件中内置了一些由主进程中`ipcMain`发送到渲染进程的事件，所以在渲染进程中可以通过`ipcRenderer`监听以下`channel`来获取信息数据。
+
+#### app-updater
+
+*这部分在想怎么优化*
+
+|    channel   | 数据类型 |   数据说明    |
+|:--------------:|:----:|---------:|
+|app-updater|string|`auto-updater`进行更新时的状态消息|
+|app-updater-progress|object|`auto-updater`进行更新下载时的进度：`{ progress, bytesPerSecond, percent, total, transferred }`|
+|app-updater|void|`auto-updater`更新文件下载完成，准备就绪的信号|
+
+#### asar-updater
+
+下表中`name`指代资源名称，等同于资源的`namespace`
+
+*这部分在想怎么优化*
+
+|    channel   | 数据类型 |   数据说明    |
+|:--------------:|:----:|---------:|
+|`asar-updater`|string|`asar-updater`准备进行更新时的状态消息|
+|`${name}-asar-updater`|string|`asar-updater`对某个资源进行更新时的状态消息|
+|`${name}-asar-updater-progress`|object|`auto-updater`对某个资源进行更新下载时的进度：`{ name, total, transferred, percent }`|
+
+### 工作原理
+
+#### namespace
 
 TBD...
