@@ -55,8 +55,8 @@ export const setupRuntimeEnv = env => {
 
   // folder for asar resources
   global.__root = global.__dev
-    ? path.posix.normalize(config.cache)
-    : path.posix.normalize(config.root.split(`${config.namespace}.asar`)[0])
+    ? path.normalize(config.cache)
+    : path.normalize(config.root.split(`${config.namespace}.asar`)[0])
 
   // baseUrl
   global.__baseUrl = global.__dev

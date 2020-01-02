@@ -3,6 +3,7 @@ import path from 'path'
 import { createHash } from 'crypto'
 import { net } from 'electron'
 import log4js from 'log4js'
+import { debounce } from 'lodash'
 import { sendRendererMessage, reloadWindow } from '../../window'
 
 const logger = log4js.getLogger('asar')
@@ -41,6 +42,7 @@ class Resource {
     const request = net.request(url)
     request
       .on('finish', () => { timer = setTimeout(() => request.abort(), 5 * 60 * 1000) })
+      .on('error', error => reject(error))
       .on('abort', () => reject(new Error('Timeout while requesting address', url)))
       .on('close', () => clearTimeout(timer))
     return request
@@ -99,13 +101,13 @@ class Resource {
 
           response
             .on('end', () => logger.info(`Resource contains ${progress.total} total bytes, transferred ${progress.transferred}`))
-            .on('data', chunk => {
+            .on('data', debounce(chunk => {
               progress.transferred += chunk.length
               if (progress.total) {
                 progress.percent = Math.min(progress.transferred, progress.total) / progress.total
                 sendRendererMessage(`${this.topic}-progress`, { name: this.name, ...progress })
               }
-            })
+            }, 1000, { leading: true }))
             .pipe(fs.createWriteStream(tmpFile))
             .once('close', () => {
               logger.info(`Resource [${this.name}] download completed`)
@@ -126,22 +128,15 @@ class Resource {
             reject(new Error(`Tmp file of resource [${this.name}] is broken!`))
           }
 
-          const dest = path.posix.join(global.__root, global.__dev ? this.name : `${this.name}.asar`)
-
-          if (global.__dev) {
-            logger.info(`Resource ${this.name} is extracted at ${dest}`)
-            require('asar').extractAll(tmpFile, dest)
+          const dest = path.posix.join(global.__root, `${this.name}.asar`)
+          fs.rename(tmpFile, dest, err => {
+            if (err) reject(new Error(`Unabled to rename tmp file of resource ${this.name}`))
+            logger.info(`Resource ${this.name} is ready at ${dest}`)
+            if (this.name === global.__namespace && !global.__dev) {
+              reloadWindow()
+            }
             resolve()
-          } else {
-            fs.rename(tmpFile, dest, err => {
-              if (err) reject(new Error(`Unabled to rename tmp file of resource ${this.name}`))
-              logger.info(`Resource ${this.name} is ready at ${dest}`)
-              if (this.name === global.__namespace) {
-                reloadWindow()
-              }
-              resolve()
-            })
-          }
+          })
         })
     })
   }
