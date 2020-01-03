@@ -285,8 +285,9 @@ ipcRender.send('switch-namespace', name)
 |    channel   | 数据类型 |   数据说明    |
 |:--------------:|:----:|---------:|
 |app-updater|string|`auto-updater`进行更新时的状态消息|
+|app-updater-available|void|`auto-updater`已确认应用有可更新版本|
 |app-updater-progress|object|`auto-updater`进行更新下载时的进度：`{ progress, bytesPerSecond, percent, total, transferred }`|
-|app-updater|void|`auto-updater`更新文件下载完成，准备就绪的信号|
+|app-updater-ready|void|`auto-updater`更新文件下载完成，准备就绪的信号|
 
 #### asar-updater
 

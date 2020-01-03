@@ -10,7 +10,6 @@ const topic = 'app-updater'
 const messages = {
   error: 'Error occurs while updating app:',
   checking: 'Checking for update...',
-  download: 'New version is available, downloading...',
   completed: 'Current version is the latest.'
 }
 
@@ -45,7 +44,7 @@ export const initializeAppUpdater = options => {
 
   autoUpdater.on('update-available', () => {
     logger.info('New version is available, downloading electron app')
-    sendRendererMessage(topic, messages.download)
+    sendRendererMessage(`${topic}-available`)
   })
 
   autoUpdater.on('update-not-available', () => {
