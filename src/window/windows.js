@@ -115,19 +115,19 @@ export default class Windows {
     })
 
     window.on('resize', debounce(() => {
-      if (!window.isVisible()) return
+      if (window.isDestroyed() || !window.isVisible()) return
       logger.debug(`Window ${window._name} has been resized. Save new position to store.`)
       const storeKey = window._category ? `windows.${window._category}` : `windows.${window._name}`
       global.$store.set(storeKey, window.getBounds())
       handleEvent(events, 'resize', window)
-    }, 3000))
+    }, 3000, { leading: true }))
 
     window.on('move', debounce(() => {
-      if (!window.isVisible()) return
+      if (window.isDestroyed() || !window.isVisible()) return
       logger.debug(`Window ${window._name} has been moved. Save new position to store.`)
       global.$store.set(`windows.${window._name}`, window.getBounds())
       handleEvent(events, 'move', window)
-    }, 3000))
+    }, 3000, { leading: true }))
   }
 
   /**
