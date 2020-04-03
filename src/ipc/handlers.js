@@ -31,8 +31,8 @@ export const registerEventHandlers = (events = {}) => {
 
   // Register customer event handlers
   Object.keys(events).forEach(name => {
-    logger.info('Registering IPC event handler:', name)
     if (!excludeEvents.includes(name)) {
+      logger.info('Registering IPC event handler:', name)
       const content = events[name]
       if (content instanceof Function) {
         ipcMain.on(name, content)

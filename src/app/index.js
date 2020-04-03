@@ -15,10 +15,6 @@ export const initializeApp = ({ events, shortcuts, devTool } = {}, updater) => {
     handleEvent(events, 'ready', app, launchInfo)
     initializeUpdater(updater)
   })
-  app.on('activate', (event, hasVisibleWindows) => {
-    initializeMainWindows()
-    handleEvent(events, 'activate', app, event, hasVisibleWindows)
-  })
   app.on('window-all-closed', () => {
     unregisterGlobalShortcuts()
     ipcMain.removeAllListeners()

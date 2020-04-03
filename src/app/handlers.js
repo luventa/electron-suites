@@ -2,7 +2,7 @@ import log4js from 'log4js'
 import { app } from 'electron'
 
 const logger = log4js.getLogger('app')
-const excludeEvents = ['ready', 'activate', 'window-all-closed']
+const excludeEvents = ['ready', 'window-all-closed']
 
 /**
  * Register customer event handlers with the given event-handler dict.
@@ -11,8 +11,8 @@ const excludeEvents = ['ready', 'activate', 'window-all-closed']
 export const registerEventHandlers = (events = {}) => {
   // Register customer event handlers
   Object.keys(events).forEach(name => {
-    logger.info('Registering event handler:', name)
     if (!excludeEvents.includes(name)) {
+      logger.info('Registering event handler:', name)
       const handler = events[name]
       if (handler instanceof Function) {
         app.on(name, events[name])
