@@ -51,6 +51,7 @@ export const setupRuntimeEnv = env => {
   })
 
   global.__port = config.port // port
+  global.__frameless = config.frameless // frameless browser window
   global.__namespace = config.namespace // namespace
   global.__resources = ['app'] // available asar resources
 

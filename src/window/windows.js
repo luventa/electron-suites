@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { handleEvent } from '../util/shared'
 import log4js from 'log4js'
-import { debounce } from 'lodash'
+import debounce from 'lodash.debounce'
 
 const logger = log4js.getLogger('window')
 
@@ -9,6 +9,7 @@ const logger = log4js.getLogger('window')
 const DEFAULT_OPTIONS = {
   height: 768,
   width: 1024,
+  autoHideMenuBar: true,
   webPreferences: {
     nodeIntegration: true,
     webSecurity: false
@@ -79,8 +80,9 @@ export default class Windows {
       return existWindow
     }
 
-    const opts = { ...DEFAULT_OPTIONS, width, height, x, y }
+    const opts = { ...DEFAULT_OPTIONS, width, height, x, y, frame: !global.__frameless }
     logger.info(`Creating new BrowserWindow [${name}] with url: ${url}`)
+    logger.debug('Final options for creating BrowserWindow:', opts)
     const window = this.collection[name] = new BrowserWindow(opts)
 
     window._name = name

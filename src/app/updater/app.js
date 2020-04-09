@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
-import { isEmpty } from 'lodash'
 import { autoUpdater } from 'electron-updater'
 import log4js from 'log4js'
+import { isEmpty } from '../../util/shared'
 import { sendRendererMessage } from '../../window'
 
 const logger = log4js.getLogger('updater')

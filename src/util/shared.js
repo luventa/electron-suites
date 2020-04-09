@@ -23,3 +23,70 @@ export function handleEvent (events, name, context) {
   logger.debug('Invoking event handler:', name, 'with context', context)
   handler.apply(context, [...arguments].splice(3))
 }
+
+/**
+ * Checks if value is an empty object, collection, map, or set.
+ * @param {*} value 
+ */
+export const isEmpty = value => {
+  if (value == null || typeof value === 'function' ) {
+    return true
+  }
+
+  const tag = value.toString()
+  if (tag === '[object Map]' || tag === '[object Set]') {
+    return !value.size
+  }
+
+  if (Array.isArray(value) || 
+      typeof value === 'string' ||
+      typeof value.splice === 'function' ||
+      tag === '[object Arguments]') {
+    return !value.length
+  }
+
+  for (const key in value) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * Checks if value is string.
+ * @param {*} value 
+ */
+export const isString = value => {
+  if (value == null) {
+    return false
+  }
+
+  const tag = typeof value
+  return tag === 'string' || (tag === 'object' && !Array.isArray(value) && toString.call(value) === '[object String]')
+}
+
+/**
+ * Checks if value is plain object.
+ * @param {*} value 
+ */
+export const isPlainObject = value => {
+  if (value == null) {
+    return false
+  }
+
+  const tag =  typeof value
+  if (tag !== 'object' || toString.call(value) !== '[object Object]') {
+    return false
+  }
+
+  if (Object.getPrototypeOf(value) === null) {
+    return true
+  }
+
+  let proto = value
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto)
+  }
+  return Object.getPrototypeOf(value) === proto
+}

@@ -3,7 +3,7 @@ import path from 'path'
 import { createHash } from 'crypto'
 import { app, net } from 'electron'
 import log4js from 'log4js'
-import { debounce } from 'lodash'
+import debounce from 'lodash.debounce'
 import { spawn } from 'child_process'
 import { sendRendererMessage, reloadAllWindows } from '../../window'
 

@@ -1,11 +1,11 @@
 const { dependencies } = require('./package.json')
 
 const deps = [
-  'lodash.merge'
+  'lodash.merge',
+  'lodash.debounce'
 ]
 
 module.exports = {
-  mode: process.env.NODE_ENV,
   entry: ['./src/index.js'],
   output: {
     library: "ElectronSuites",

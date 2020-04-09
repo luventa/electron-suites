@@ -1,7 +1,7 @@
 import { app, ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
-import { each, isEmpty, isPlainObject, isString } from 'lodash'
+import { isEmpty, isString, isPlainObject } from '../../util/shared'
 import log4js from 'log4js'
 import { sendRendererMessage } from '../../window'
 import Resource from './resource'
@@ -56,16 +56,17 @@ export const initializeAsarUpdater = resources => {
     return
   }
 
-  each(resources, (content, name) => {
+  for (let name in resources) {
+    const content = resources[name]
     const config = isString(content) ? { name, url: content } : content
     if (!isPlainObject(config) || !isString(config.url)) {
       logger.warn(`Content of resource [${name}] is invalid, skipping...`)
-      return true
+      continue
     }
     config.force = global.__dev || config.force
     resourceCache[name] = new Resource(config)
     !global.__resources.includes(name) && global.__resources.push(name)
-  })
+  }
 
   ipcMain.on(`${topic}-check`, (event, name) => {
     const resource = resourceCache[name]
