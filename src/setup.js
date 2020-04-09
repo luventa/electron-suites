@@ -1,5 +1,6 @@
 import path from 'path'
 import log4js from 'log4js'
+import merge from 'lodash.merge'
 
 const logger = log4js.getLogger('setup')
 
@@ -22,23 +23,23 @@ const DEFAULT_LOG4JS_APPENDERS = {
 }
 
 export const setupRuntimeEnv = env => {
-  const config = env ? { ...DEFAULT_CONFIG, ...env } : DEFAULT_CONFIG
+  const config = env ? merge({}, DEFAULT_CONFIG, env) : DEFAULT_CONFIG
 
   // runtime flags
   global.__dev = config.mode === 'development'
   global.__prod = config.mode === 'production'
 
-  // log4js config
-  log4js.configure({
+  const loggerConfig = merge({}, {
     appenders: DEFAULT_LOG4JS_APPENDERS,
     categories: {
       default: {
         appenders: global.__dev ? ['console'] : ['file', 'console'],
         level: global.__dev ? 'debug' : 'info'
       }
-    },
-    ...config.logger
-  })
+    }
+  }, config.logger)
+  // log4js config
+  log4js.configure(loggerConfig)
   global.$logger = log4js.getLogger('main')
 
   if (!config.port && global.__dev) {

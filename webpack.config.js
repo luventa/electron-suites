@@ -1,5 +1,9 @@
 const { dependencies } = require('./package.json')
 
+const deps = [
+  'lodash.merge'
+]
+
 module.exports = {
   mode: process.env.NODE_ENV,
   entry: ['./src/index.js'],
@@ -12,7 +16,7 @@ module.exports = {
     extensions: ['.js', '.json', '.node']
   },
   externals: [
-    ...Object.keys(dependencies)
+    ...Object.keys(dependencies).filter(dep => !deps.includes(dep))
   ],
   target: 'electron-main',
   module: {

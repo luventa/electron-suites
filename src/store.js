@@ -1,4 +1,5 @@
 import Store from 'electron-store'
+import merge from 'lodash.merge'
 
 // Default options for initializing electron store.
 const DEFAULT_OPTIONS = {
@@ -11,5 +12,5 @@ const DEFAULT_OPTIONS = {
 }
 
 export const initializeStore = config => {
-  global.$store = new Store({ ...DEFAULT_OPTIONS, ...config })
+  global.$store = new Store(merge({}, DEFAULT_OPTIONS, config))
 }

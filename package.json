@@ -27,6 +27,7 @@
     "electron-devtools-installer": "^2.2.4",
     "electron-store": "^5.0.0",
     "electron-updater": "^4.2.0",
+    "lodash.merge": "^4.6.2",
     "log4js": "^6.1.0"
   },
   "devDependencies": {
