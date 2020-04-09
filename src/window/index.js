@@ -32,6 +32,7 @@ export const createChildWindow = config => {
  * @param {String} identifier name or url of the window which will send ipc message. Default to 'main'
  */
 export const sendRendererMessage = (topic, message, identifier = 'main') => {
+  if (!windows) return
   logger.debug('Sending message to window with identifier', identifier, 'and topic', topic)
   const window = windows.collection[identifier] || windows.findWindowByUrl(identifier)
   if (!window || !topic || !window.webContents) {
@@ -66,10 +67,21 @@ export const switchNamespace = namespace => {
  * @param {*} identifier name or url of the window which will send ipc message. Default to 'main'
  */
 export const reloadWindow = (identifier = 'main') => {
+  if (!windows) return
   const window = windows.collection[identifier] || windows.findWindowByUrl(identifier)
   logger.info(`Reload window ${window._name} with url ${window._url}`)
-  window.reload()
+  !window.isDestroyed() && window.reload()
 }
+
+/**
+ * Reload all windows for resource update
+ */
+export const reloadAllWindows = () => {
+  for (const name in windows.collection) {
+    reloadWindow(name)
+  }
+}
+
 
 /**
  * Restore all window instances

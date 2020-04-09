@@ -1,10 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import { createHash } from 'crypto'
-import { net } from 'electron'
+import { app, net } from 'electron'
 import log4js from 'log4js'
 import { debounce } from 'lodash'
-import { sendRendererMessage, reloadWindow } from '../../window'
+import { spawn } from 'child_process'
+import { sendRendererMessage, reloadAllWindows } from '../../window'
 
 const logger = log4js.getLogger('asar')
 const messages = {
@@ -63,12 +64,15 @@ class Resource {
           .on('end', () => {
             try {
               logger.debug(`Got manifest data ${manifest} for resource [${this.name}]`)
-
               manifest = JSON.parse(manifest)
               logger.info(`Checking manifest of resource [${this.name}]`)
-
               if (!manifest) {
-                reject(new Error(`Resource [${this.name}] has invalid manifest info`))
+                throw new Error(`Resource [${this.name}] has invalid manifest info`)
+              }
+              if (this.force) {
+                sendRendererMessage(this.topic, messages.force)
+              } else if (this.manifest && manifest.md5 === this.manifest.md5) {
+                throw new Error(`Resource [${this.name}] is at the latest version.`)
               }
               resolve(manifest)
             } catch (error) {
@@ -77,15 +81,6 @@ class Resource {
           })
       }).end()
     })
-  }
-
-  async _compareManifest (manifest) {
-    logger.info(`Comparing manifest of resource [${this.name}]`)
-    if (this.force) {
-      sendRendererMessage(this.topic, messages.force)
-    } else if (this.manifest && manifest.md5 === this.manifest.md5) {
-      throw new Error(`Resource [${this.name}] is at the latest version.`)
-    }
   }
 
   async _fetchResource () {
@@ -117,7 +112,7 @@ class Resource {
     })
   }
 
-  async _update (tmpFile, manifest) {
+  async _validateResource (tmpFile, manifest) {
     return new Promise((resolve, reject) => {
       logger.info(`Validating md5 of resource [${this.name}]`)
       const md5Hash = createHash('md5')
@@ -125,41 +120,59 @@ class Resource {
         .on('data', data => md5Hash.update(data))
         .on('close', () => {
           if (md5Hash.digest('hex') !== manifest.md5) {
-            reject(new Error(`Tmp file of resource [${this.name}] is broken!`))
+            return reject(new Error(`Tmp file of resource [${this.name}] is broken!`))
           }
-
-          const dest = path.posix.join(global.__root, `${this.name}.asar`)
-          fs.rename(tmpFile, dest, err => {
-            if (err) reject(new Error(`Unabled to rename tmp file of resource ${this.name}`))
-            logger.info(`Resource ${this.name} is ready at ${dest}`)
-            if (this.name === global.__namespace && !global.__dev) {
-              reloadWindow()
-            }
-            resolve()
-          })
+          path.join(global.__root, `${this.name}.asar`)
+          resolve()
         })
     })
   }
 
-  _updateManifest (manifest) {
-    this.manifest = manifest
-    global.$store.set(this.storeKey, manifest)
+  async _updateResource (tmpFile, manifest) {
+    return new Promise((resolve, reject) => {
+      logger.info(`Updating resource [${this.name}]...`)
+      const dest = path.join(global.__root, `${this.name}.asar`)
+
+      fs.rename(tmpFile, dest, err => {
+        if (err) {
+          if (global.__dev) {
+            return reject(new Error(`Unabled to rename tmp file of resource ${this.name}`))
+          }
+          const _startup = path.join(global.__root, 'asar-updater-startup.vbs')
+          const _updater = path.join(global.__root, 'asar-updater.vbs')
+          logger.info(`Resource ${this.name} will be ready after restart.`)
+          spawn('cmd', ['/c', `${_startup} ${_updater} ${tmpFile} ${dest} ${process.execPath}`], {
+            shell: false,
+            detached: true,
+            windowsVerbatimArguments: true,
+            stdio: 'ignore',
+            windowsHide: true
+          }).unref()
+          global.$store.set(this.storeKey, manifest)
+          logger.info(`Relaunch electron app now...`)
+          app.exit(0)
+          return
+        }
+
+        logger.info(`Resource ${this.name} is ready at ${dest}`)
+        this.manifest = manifest
+        global.$store.set(this.storeKey, manifest)
+        if (this.name === global.__namespace && !global.__dev) { reloadAllWindows() }
+        resolve()
+      })
+    })
   }
 
   async checkForUpdate () {
     try {
       sendRendererMessage(this.topic, messages.checking)
       const manifest = await this._fetchManifest()
-      this._compareManifest(manifest)
-
       sendRendererMessage(this.topic, messages.download)
       const tmpFile = await this._fetchResource()
-
+      await this._validateResource(tmpFile, manifest)
       sendRendererMessage(this.topic, messages.update)
-      await this._update(tmpFile, manifest)
-
+      await this._updateResource(tmpFile, manifest)
       sendRendererMessage(this.topic, messages.completed)
-      this._updateManifest(manifest)
     } catch (error) {
       logger.error(error.message)
       sendRendererMessage(this.topic, `${messages.error} ${error.message}`)
