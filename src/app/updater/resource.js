@@ -89,12 +89,12 @@ class Resource {
 
     return new Promise((resolve, reject) => {
       this._createRequest(this.url, reject)
-        .on('error', err => reject(err))
         .on('response', response => {
           logger.info(`Start to donwload resource [${this.name}] from ${this.url}`)
           progress.total = Number(response.headers['content-length'])
 
           response
+            .on('error', error => reject(error))
             .on('end', () => logger.info(`Resource contains ${progress.total} total bytes, transferred ${progress.transferred}`))
             .on('data', debounce(chunk => {
               progress.transferred += chunk.length

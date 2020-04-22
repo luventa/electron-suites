@@ -5,7 +5,7 @@ import merge from 'lodash.merge'
 const DEFAULT_OPTIONS = {
   defaults: {
     windows: {
-      main: { width: 340, height: 550 }
+      main: { width: 1366, height: 768 }
     },
     resources: {}
   }

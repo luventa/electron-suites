@@ -6,6 +6,10 @@ import { installDevTool, registerEventHandlers, onAllClosed } from './handlers'
 import { registerGlobalShortcuts, unregisterGlobalShortcuts } from './shortcuts'
 
 export const initializeApp = ({ events, shortcuts, devTool } = {}, updater) => {
+  // toggle switch of chromium
+  if (!global.__prod) {
+    app.commandLine.appendSwitch('--ignore-certificate-errors')
+  }
   // regist events with default handler and customer handlers
   app.on('ready', launchInfo => {
     installDevTool(devTool)
