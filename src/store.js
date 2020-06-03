@@ -11,6 +11,16 @@ const DEFAULT_OPTIONS = {
   }
 }
 
+/** Need to catch exception for some reason... */
+const _write = Store.prototype._write
+Store.prototype._write = function (value) {
+  try {
+    _write.call(this, value)
+  } catch (e) {
+    global.$logger.error(e)
+  }
+}
+
 export const initializeStore = config => {
   global.$store = new Store(merge({}, DEFAULT_OPTIONS, config))
 }
