@@ -1,6 +1,6 @@
 {
   "name": "electron-suites",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A collection of useful electron packages for vue-front-end-boilerplate.",
   "main": "dist/esuites.js",
   "sideEffects": false,
